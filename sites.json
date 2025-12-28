@@ -11,8 +11,8 @@
     "url": "https://docs.tensamin.net/"
   },
   {
-    "id": "auth",
-    "name": "Authentication Server",
-    "url": "https://auth.tensamin.net"
+    "id": "omega",
+    "name": "Omega",
+    "url": "https://omega.tensamin.net"
   }
 ]
