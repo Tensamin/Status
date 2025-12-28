@@ -79,7 +79,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-15 p-15">
-      <p className="text-4xl font-bold">Tensamin Satus</p>
+      <p className="text-4xl font-bold">Tensamin Status</p>
       <div className="flex flex-col gap-5 w-full">
         {appData && (
           <Chart checks={appData.checks} url={appData.url} title="Client" />
