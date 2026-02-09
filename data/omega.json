@@ -4,18 +4,6 @@
   "url": "https://omega.tensamin.net",
   "checks": [
     {
-      "t": "2026-02-07T21:55:18.468Z",
-      "ok": false,
-      "code": null,
-      "rt": null
-    },
-    {
-      "t": "2026-02-07T22:25:01.217Z",
-      "ok": false,
-      "code": null,
-      "rt": null
-    },
-    {
       "t": "2026-02-07T22:53:33.558Z",
       "ok": false,
       "code": null,
@@ -374,6 +362,12 @@
       "ok": false,
       "code": 400,
       "rt": 369
+    },
+    {
+      "t": "2026-02-09T22:29:03.556Z",
+      "ok": false,
+      "code": 400,
+      "rt": 397
     }
   ]
 }
