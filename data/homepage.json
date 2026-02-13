@@ -4,12 +4,6 @@
   "url": "https://tensamin.net",
   "checks": [
     {
-      "t": "2026-02-11T17:42:19.936Z",
-      "ok": true,
-      "code": 200,
-      "rt": 541
-    },
-    {
       "t": "2026-02-11T18:40:00.724Z",
       "ok": true,
       "code": 200,
@@ -320,6 +314,12 @@
       "ok": true,
       "code": 200,
       "rt": 608
+    },
+    {
+      "t": "2026-02-13T18:05:43.477Z",
+      "ok": false,
+      "code": null,
+      "rt": null
     }
   ]
 }
