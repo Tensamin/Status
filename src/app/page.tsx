@@ -1,7 +1,7 @@
 "use client";
 
 // Package Imports
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 // Components
@@ -50,26 +50,28 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+type Site = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 const baseUrl =
   "https://raw.githubusercontent.com/Tensamin/tensamin.github.io/refs/heads/main/data";
 
+import sites from "../../sites.json";
+
 export default function Home() {
-  const [appData, setAppData] = useState<Data | null>(null);
-  const [authData, setAuthData] = useState<Data | null>(null);
-  const [docsData, setDocsData] = useState<Data | null>(null);
+  const [siteData, setSiteData] = useState<Record<string, Data>>({});
 
   useEffect(() => {
-    fetch(baseUrl + "/app.json")
-      .then((response) => response.json())
-      .then(setAppData);
-
-    fetch(baseUrl + "/auth.json")
-      .then((response) => response.json())
-      .then(setAuthData);
-
-    fetch(baseUrl + "/docs.json")
-      .then((response) => response.json())
-      .then(setDocsData);
+    (sites as Site[]).forEach((site) => {
+      fetch(`${baseUrl}/${site.id}.json`)
+        .then((response) => response.json())
+        .then((data: Data) =>
+          setSiteData((prev) => ({ ...prev, [site.id]: data })),
+        );
+    });
 
     // Reload every 10 minutes
     setTimeout(() => {
@@ -81,23 +83,19 @@ export default function Home() {
     <div className="flex flex-col gap-15 p-15">
       <p className="text-4xl font-bold">Tensamin Status</p>
       <div className="flex flex-col gap-5 w-full">
-        {appData && (
-          <Chart checks={appData.checks} url={appData.url} title="Client" />
-        )}
-        {authData && (
-          <Chart
-            checks={authData.checks}
-            url={authData.url}
-            title="Authentication Server"
-          />
-        )}
-        {docsData && (
-          <Chart
-            checks={docsData.checks}
-            url={docsData.url}
-            title="Documentation"
-          />
-        )}
+        {(sites as Site[]).map((site) => {
+          const data = siteData[site.id];
+          return (
+            data && (
+              <Chart
+                key={site.id}
+                checks={data.checks}
+                url={site.url}
+                title={site.name}
+              />
+            )
+          );
+        })}
       </div>
     </div>
   );
