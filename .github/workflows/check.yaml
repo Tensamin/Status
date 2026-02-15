@@ -24,13 +24,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
+      - uses: oven-sh/setup-bun@v2
 
       - name: Execute uptime checks
-        run: node scripts/uptime.js
+        run: bun scripts/uptime.js
 
       - name: Add data to repository
         run: |
