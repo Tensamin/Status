@@ -74,7 +74,7 @@ async function probe(url) {
       t: new Date().toISOString(),
       ok: r.ok,
       code: r.status,
-      rt: r.responseTime,
+      rt: r.responseTime ?? 0,
     });
     prev.checks = pruneChecks(prev.checks);
     if (prev.checks.length > MAX_CHECKS) {
