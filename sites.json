@@ -1,0 +1,23 @@
+[
+  {
+    "id": "omega",
+    "name": "Omega",
+    "url": "https://omega.tensamin.net/"
+  },
+  {
+    "id": "legal",
+    "name": "Legal",
+    "url": "https://legal.tensamin.net/"
+  },
+  {
+    "id": "docs",
+    "name": "Documentation",
+    "url": "https://docs.tensamin.net/"
+  },
+  { "id": "app", "name": "Web-App", "url": "https://app.tensamin.net/" },
+  {
+    "id": "homepage",
+    "name": "Homepage",
+    "url": "https://tensamin.net/"
+  }
+]
