@@ -50,12 +50,12 @@ jobs:
           else
             echo "Rewriting ${BRANCH} to keep only commits from the last ${RETENTION_DAYS} days."
             export CUTOFF_EPOCH="$(date -u -d "${RETENTION_DAYS} days ago" +%s)"
-            FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --prune-empty --commit-filter '
+            FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --commit-filter '
               commit_epoch="$(git show -s --format=%ct "$GIT_COMMIT")"
               if [ "$commit_epoch" -lt "$CUTOFF_EPOCH" ]; then
                 skip_commit "$@"
               else
-                git commit-tree "$@"
+                git_commit_non_empty_tree "$@"
               fi
             ' -- "${BRANCH}"
             history_changed=true
