@@ -1,0 +1,97 @@
+name: Prune old commits and workflow runs
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: cleanup-history-and-runs
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH: ${{ github.event.repository.default_branch }}
+      RETENTION_DAYS: "30"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Prune commits older than 30 days
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "${BRANCH}" --prune
+          git checkout -B "${BRANCH}" "origin/${BRANCH}"
+
+          old_count="$(git rev-list --count --before="${RETENTION_DAYS} days ago" HEAD)"
+          recent_count="$(git rev-list --count --since="${RETENTION_DAYS} days ago" HEAD)"
+          history_changed=false
+
+          if [ "${old_count}" -eq 0 ]; then
+            echo "No commits older than ${RETENTION_DAYS} days were found on ${BRANCH}."
+          elif [ "${recent_count}" -eq 0 ]; then
+            echo "All commits are older than ${RETENTION_DAYS} days; creating a fresh snapshot commit."
+            git checkout --orphan cleanup-snapshot
+            git add -A
+            git commit -m "chore(history): snapshot repository state"
+            history_changed=true
+          else
+            echo "Rewriting ${BRANCH} to keep only commits from the last ${RETENTION_DAYS} days."
+            export CUTOFF_EPOCH="$(date -u -d "${RETENTION_DAYS} days ago" +%s)"
+            FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --prune-empty --commit-filter '
+              commit_epoch="$(git show -s --format=%ct "$GIT_COMMIT")"
+              if [ "$commit_epoch" -lt "$CUTOFF_EPOCH" ]; then
+                skip_commit "$@"
+              else
+                git commit-tree "$@"
+              fi
+            ' -- "${BRANCH}"
+            history_changed=true
+          fi
+
+          if [ "${history_changed}" = true ]; then
+            git for-each-ref refs/original/ --format='delete %(refname)' | git update-ref --stdin || true
+            git reflog expire --expire=now --all
+            git gc --prune=now --aggressive
+            git push --force origin HEAD:"${BRANCH}"
+          fi
+
+      - name: Delete workflow runs older than 30 days
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const cutoff = new Date(Date.now() - Number(process.env.RETENTION_DAYS) * 24 * 60 * 60 * 1000);
+
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100,
+              },
+              (response) => response.data.workflow_runs,
+            );
+
+            const staleRuns = runs.filter((run) => new Date(run.created_at) < cutoff);
+            core.info(`Found ${staleRuns.length} workflow runs older than ${process.env.RETENTION_DAYS} days.`);
+
+            for (const run of staleRuns) {
+              core.info(`Deleting workflow run ${run.id} created at ${run.created_at}.`);
+              await github.rest.actions.deleteWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+              });
+            }
