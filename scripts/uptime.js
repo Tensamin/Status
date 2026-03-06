@@ -46,7 +46,11 @@ async function probe(url) {
     });
     const ms = Math.round(performance.now() - start);
     clearTimeout(t);
-    return { ok: res.ok, status: res.status, responseTime: ms };
+    return {
+      ok: res.ok,
+      status: res.status,
+      responseTime: res.ok ? ms : 0,
+    };
   } catch (err) {
     clearTimeout(t);
     return { ok: false, status: null, responseTime: null, error: String(err) };
