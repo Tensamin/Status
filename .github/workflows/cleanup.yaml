@@ -81,10 +81,10 @@ jobs:
                 repo: context.repo.repo,
                 per_page: 100,
               },
-              (response) => response.data.workflow_runs,
+              (response) => response.data?.workflow_runs ?? [],
             );
 
-            const staleRuns = runs.filter((run) => new Date(run.created_at) < cutoff);
+            const staleRuns = runs.filter((run) => run?.created_at && new Date(run.created_at) < cutoff);
             core.info(`Found ${staleRuns.length} workflow runs older than ${process.env.RETENTION_DAYS} days.`);
 
             for (const run of staleRuns) {
